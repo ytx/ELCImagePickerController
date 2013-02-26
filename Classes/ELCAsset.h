@@ -21,5 +21,6 @@
 
 -(id)initWithAsset:(ALAsset*)_asset;
 -(BOOL)selected;
+-(void)setSelected:(BOOL)_selected;
 
 @end

@@ -272,6 +272,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = ELCImagePickerDemo_Prefix.pch;
 				INFOPLIST_FILE = "ELCImagePickerDemo-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = ELCImagePickerDemo;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -285,6 +286,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = ELCImagePickerDemo_Prefix.pch;
 				INFOPLIST_FILE = "ELCImagePickerDemo-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = ELCImagePickerDemo;
 				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;

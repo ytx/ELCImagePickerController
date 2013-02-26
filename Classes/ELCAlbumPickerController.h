@@ -13,14 +13,20 @@
 	NSMutableArray *assetGroups;
 	NSOperationQueue *queue;
 	id parent;
-    
+    NSMutableDictionary *selectedAssets;
+    id selected;
+    int type; // 0:photo, 1:video
     ALAssetsLibrary *library;
 }
 
 @property (nonatomic, assign) id parent;
 @property (nonatomic, retain) NSMutableArray *assetGroups;
+@property (nonatomic, retain) NSMutableDictionary *selectedAssets;
+@property (nonatomic, assign) id selected;
+@property (nonatomic) int type;
 
--(void)selectedAssets:(NSArray*)_assets;
+-(void)selectedAssets:(NSMutableDictionary*)_assets;
+-(void)doneAction;
 
 @end
 

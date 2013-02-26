@@ -12,9 +12,12 @@
 @interface ELCImagePickerDemoViewController : UIViewController <ELCImagePickerControllerDelegate, UINavigationControllerDelegate, UIScrollViewDelegate> {
 
 	IBOutlet UIScrollView *scrollview;
+    NSMutableDictionary *origInfo;
+    
 }
 
 @property (nonatomic, retain) IBOutlet UIScrollView *scrollview;
+@property (nonatomic, retain) NSMutableDictionary *origInfo;
 
 -(IBAction)launchController;
 

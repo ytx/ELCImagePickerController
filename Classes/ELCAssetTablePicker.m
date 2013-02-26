@@ -15,10 +15,12 @@
 
 @synthesize parent;
 @synthesize selectedAssetsLabel;
-@synthesize assetGroup, elcAssets;
+@synthesize assetGroup, elcAssets, preselected;
 
 -(void)viewDidLoad {
-        
+    
+    canceled = false;
+    
 	[self.tableView setSeparatorColor:[UIColor clearColor]];
 	[self.tableView setAllowsSelection:NO];
 
@@ -26,10 +28,16 @@
     self.elcAssets = tempArray;
     [tempArray release];
 	
-	UIBarButtonItem *doneButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneAction:)] autorelease];
-	[self.navigationItem setRightBarButtonItem:doneButtonItem];
-	[self.navigationItem setTitle:@"Loading..."];
+	//UIBarButtonItem *doneButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneAction:)] autorelease];
+	//[self.navigationItem setRightBarButtonItem:doneButtonItem];
+	
+    UIBarButtonItem *cancelButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelAction:)] autorelease];
+	[self.navigationItem setRightBarButtonItem:cancelButtonItem];
+    [self.navigationItem setTitle:@"Loading..."];
 
+    if(self.preselected == NULL){
+        self.preselected = [[NSMutableDictionary alloc] init];
+    }
 	[self performSelectorInBackground:@selector(preparePhotos) withObject:nil];
     
     // Show partial while full list loads
@@ -51,30 +59,54 @@
          
          ELCAsset *elcAsset = [[[ELCAsset alloc] initWithAsset:result] autorelease];
          [elcAsset setParent:self];
+         ALAsset *asset = [elcAsset asset];
+         NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
+         NSLog(@"%@", url);
+//         NSURL *url = [[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]];
+         [elcAsset setSelected:([self.preselected objectForKey:url] != nil)];
          [self.elcAssets addObject:elcAsset];
      }];    
     NSLog(@"done enumerating photos");
 	
 	[self.tableView reloadData];
-	[self.navigationItem setTitle:@"Pick Photos"];
+    if(((ELCAlbumPickerController*)self.parent).type == 0){
+        [self.navigationItem setTitle:@"Pick Photos"];
+    }else{
+        [self.navigationItem setTitle:@"Pick Videos"];
+    }
     
     [pool release];
 
 }
 
+- (void) cancelAction:(id)sender {
+    canceled = true;
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 - (void) doneAction:(id)sender {
 	
-	NSMutableArray *selectedAssetsImages = [[[NSMutableArray alloc] init] autorelease];
+	NSMutableDictionary *selectedAssetsImages = [[[NSMutableDictionary alloc] init] autorelease];
 	    
 	for(ELCAsset *elcAsset in self.elcAssets) 
     {		
 		if([elcAsset selected]) {
-			
-			[selectedAssetsImages addObject:[elcAsset asset]];
+			ALAsset *asset = [elcAsset asset];
+            NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
+            NSLog(@"%@", url);
+//            NSURL *url = [[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]];
+			[selectedAssetsImages setObject:asset forKey:url];
 		}
 	}
         
     [(ELCAlbumPickerController*)self.parent selectedAssets:selectedAssetsImages];
+}
+
+- (void) viewWillDisappear:(BOOL)animated {
+    if(!canceled){
+        [self doneAction:nil];
+    }
+    [super viewWillDisappear:animated];
 }
 
 #pragma mark UITableViewDataSource Delegate Methods

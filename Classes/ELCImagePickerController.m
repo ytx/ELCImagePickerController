@@ -22,24 +22,44 @@
 	}
 }
 
--(void)selectedAssets:(NSArray*)_assets {
+-(void)selectedAssets:(NSMutableDictionary*)_assets {
 
 	NSMutableArray *returnArray = [[[NSMutableArray alloc] init] autorelease];
-	
-	for(ALAsset *asset in _assets) {
-
-		NSMutableDictionary *workingDictionary = [[NSMutableDictionary alloc] init];
-		[workingDictionary setObject:[asset valueForProperty:ALAssetPropertyType] forKey:@"UIImagePickerControllerMediaType"];
-        [workingDictionary setObject:[UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]] forKey:@"UIImagePickerControllerOriginalImage"];
-		[workingDictionary setObject:[[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]] forKey:@"UIImagePickerControllerReferenceURL"];
-		
-		[returnArray addObject:workingDictionary];
-		
-		[workingDictionary release];	
-	}
+    NSMutableDictionary *returnDict = [[[NSMutableDictionary alloc] init] autorelease];
+    NSEnumerator *e = [_assets keyEnumerator];
+    NSMutableDictionary *d, *dict;
+    id key;
+    while(key = [e nextObject]){
+        d = [_assets objectForKey:key];
+        NSEnumerator *e2 = [d keyEnumerator];
+        dict = [[[NSMutableDictionary alloc] init] autorelease];
+        id key2;
+        while(key2 = [e2 nextObject]){
+            id o = [d objectForKey:key2];
+            if([o isKindOfClass:[ALAsset class]]){
+                ALAsset *asset = o;
+                NSMutableDictionary *workingDictionary = [[NSMutableDictionary alloc] init];
+                [workingDictionary setObject:[asset valueForProperty:ALAssetPropertyType] forKey:@"UIImagePickerControllerMediaType"];
+                [workingDictionary setObject:[UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]] forKey:@"UIImagePickerControllerOriginalImage"];
+                [workingDictionary setObject:[[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]] forKey:@"UIImagePickerControllerReferenceURL"];
+                [returnArray addObject:workingDictionary];
+                [dict setObject:workingDictionary forKey:key2];
+                [workingDictionary release];
+            }else{ // NSMutableDictionary
+                [returnArray addObject:o];
+                [dict setObject:o forKey:key2];
+            }
+        }
+        NSLog(@"%@ : %@", key, dict);
+        [returnDict setObject:dict forKey:key];
+    }
 	
     [self popToRootViewControllerAnimated:NO];
     [[self parentViewController] dismissModalViewControllerAnimated:YES];
+    
+    if([delegate respondsToSelector:@selector(elcImagePickerController:setOrigInfo:)]) {
+        [delegate performSelector:@selector(elcImagePickerController:setOrigInfo:) withObject:self withObject:[NSMutableDictionary dictionaryWithDictionary:returnDict]];
+    }
     
 	if([delegate respondsToSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:)]) {
 		[delegate performSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:) withObject:self withObject:[NSArray arrayWithArray:returnArray]];

@@ -13,13 +13,15 @@
 
 @implementation ELCImagePickerDemoViewController
 
-@synthesize scrollview;
+@synthesize scrollview, origInfo;
 
 -(IBAction)launchController {
 	
     ELCAlbumPickerController *albumController = [[ELCAlbumPickerController alloc] initWithNibName:@"ELCAlbumPickerController" bundle:[NSBundle mainBundle]];    
 	ELCImagePickerController *elcPicker = [[ELCImagePickerController alloc] initWithRootViewController:albumController];
     [albumController setParent:elcPicker];
+    albumController.type = 1;
+    albumController.selectedAssets = self.origInfo;
 	[elcPicker setDelegate:self];
     
     ELCImagePickerDemoAppDelegate *app = (ELCImagePickerDemoAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -60,6 +62,10 @@
 - (void)elcImagePickerControllerDidCancel:(ELCImagePickerController *)picker {
 
 	[self dismissModalViewControllerAnimated:YES];
+}
+
+- (void)elcImagePickerController:(ELCImagePickerController *)picker setOrigInfo:(NSMutableDictionary *)info {
+    self.origInfo = info;
 }
 
 - (void)didReceiveMemoryWarning {
