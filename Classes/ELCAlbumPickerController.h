@@ -16,6 +16,7 @@
     NSMutableDictionary *selectedAssets;
     id selected;
     int type; // 0:photo, 1:video
+    BOOL selectAll;
     ALAssetsLibrary *library;
 }
 
@@ -24,6 +25,7 @@
 @property (nonatomic, retain) NSMutableDictionary *selectedAssets;
 @property (nonatomic, assign) id selected;
 @property (nonatomic) int type;
+@property (nonatomic) BOOL selectAll;
 
 -(void)selectedAssets:(NSMutableDictionary*)_assets;
 -(void)doneAction;

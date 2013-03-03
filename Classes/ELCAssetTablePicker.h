@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
-@interface ELCAssetTablePicker : UITableViewController
+@interface ELCAssetTablePicker : UITableViewController <UIActionSheetDelegate>
 {
 	ALAssetsGroup *assetGroup;
 	

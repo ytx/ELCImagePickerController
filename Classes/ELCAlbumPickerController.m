@@ -8,10 +8,11 @@
 #import "ELCAlbumPickerController.h"
 #import "ELCImagePickerController.h"
 #import "ELCAssetTablePicker.h"
+#import "ELCAsset.h"
 
 @implementation ELCAlbumPickerController
 
-@synthesize parent, assetGroups, selectedAssets, selected, type;
+@synthesize parent, assetGroups, selectedAssets, selected, type, selectAll;
 
 #pragma mark -
 #pragma mark View lifecycle
@@ -56,12 +57,41 @@
             
             [self.assetGroups addObject:group];
             
-            if([self.selectedAssets objectForKey:[group valueForProperty:ALAssetsGroupPropertyURL]] == nil){
-                NSMutableDictionary *tempDict = [[NSMutableDictionary alloc] init];
+            NSMutableDictionary *tempDict = [self.selectedAssets objectForKey:[group valueForProperty:ALAssetsGroupPropertyURL]];
+            if(tempDict == nil){
+                tempDict = [[[NSMutableDictionary alloc] init] autorelease];
                 [self.selectedAssets setObject:tempDict forKey:[group valueForProperty:ALAssetsGroupPropertyURL]];
-                [tempDict release];
             }
 
+            if(selectAll){
+                for(ALAssetsGroup *group in self.assetGroups){
+                    NSMutableDictionary *tempDict = [self.selectedAssets objectForKey:[group valueForProperty:ALAssetsGroupPropertyURL]];
+                    if(tempDict.count == 0){
+                        if(self.type == 0){
+                            [group setAssetsFilter:[ALAssetsFilter allPhotos]];
+                        }else{
+                            [group setAssetsFilter:[ALAssetsFilter allVideos]];
+                        }
+                        [group enumerateAssetsUsingBlock:^(ALAsset *asset, NSUInteger index, BOOL *stop)
+                         {
+                             if(asset == nil)
+                             {
+                                 return;
+                             }
+                             NSMutableDictionary *workingDictionary = [[NSMutableDictionary alloc] init];
+                             [workingDictionary setObject:[asset valueForProperty:ALAssetPropertyType] forKey:@"UIImagePickerControllerMediaType"];
+                             [workingDictionary setObject:[UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]] forKey:@"UIImagePickerControllerOriginalImage"];
+                             [workingDictionary setObject:[[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]] forKey:@"UIImagePickerControllerReferenceURL"];
+                             //NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
+                             NSURL *url = [[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]];
+                             NSLog(@"selectAll:%@", url);
+                             [tempDict setObject:workingDictionary forKey:url];
+                             [workingDictionary release];
+                         }];
+                    }
+                }
+            }
+            
             // Reload albums
             [self performSelectorOnMainThread:@selector(reloadTableView) withObject:nil waitUntilDone:YES];
         };
@@ -82,7 +112,10 @@
                              failureBlock:assetGroupEnumberatorFailure];
         
         [pool release];
-    });    
+        
+
+        
+    });
 }
 
 -(void)reloadTableView {
@@ -145,8 +178,13 @@
     }
     NSInteger gCount = [g numberOfAssets];
     NSMutableArray *a = [self.selectedAssets objectForKey:[g valueForProperty:ALAssetsGroupPropertyURL]];
+    NSInteger aCount = a.count;
+//    if(aCount == 0 && selectAll){
+//        aCount = gCount;
+//    }
     
-    cell.textLabel.text = [NSString stringWithFormat:@"%@ (%d/%d)",[g valueForProperty:ALAssetsGroupPropertyName], a.count, gCount];
+    cell.textLabel.text = [NSString stringWithFormat:@"%@ (%d/%d)",[g valueForProperty:ALAssetsGroupPropertyName], aCount, gCount];
+    cell.textLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
     [cell.imageView setImage:[UIImage imageWithCGImage:[(ALAssetsGroup*)[assetGroups objectAtIndex:indexPath.row] posterImage]]];
 	[cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
 	
@@ -168,13 +206,15 @@
     // Move me    
     picker.assetGroup = [assetGroups objectAtIndex:indexPath.row];
     self.selected = [picker.assetGroup valueForProperty:ALAssetsGroupPropertyURL];
-    picker.preselected = [self.selectedAssets objectForKey:self.selected];
+    NSMutableDictionary *preselected = [self.selectedAssets objectForKey:self.selected];
+    picker.preselected = preselected;
     if(self.type == 0){
         [picker.assetGroup setAssetsFilter:[ALAssetsFilter allPhotos]];
     }else{
         [picker.assetGroup setAssetsFilter:[ALAssetsFilter allVideos]];
     }
     
+    //self.navigationItem.title = [picker.assetGroup valueForProperty:ALAssetsGroupPropertyName];
 	[self.navigationController pushViewController:picker animated:YES];
 	[picker release];
 }

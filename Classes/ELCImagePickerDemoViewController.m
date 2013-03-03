@@ -20,7 +20,8 @@
     ELCAlbumPickerController *albumController = [[ELCAlbumPickerController alloc] initWithNibName:@"ELCAlbumPickerController" bundle:[NSBundle mainBundle]];    
 	ELCImagePickerController *elcPicker = [[ELCImagePickerController alloc] initWithRootViewController:albumController];
     [albumController setParent:elcPicker];
-    albumController.type = 1;
+    albumController.selectAll = NO;
+    albumController.type = 0;
     albumController.selectedAssets = self.origInfo;
 	[elcPicker setDelegate:self];
     

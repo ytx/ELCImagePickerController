@@ -31,8 +31,12 @@
 	//UIBarButtonItem *doneButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneAction:)] autorelease];
 	//[self.navigationItem setRightBarButtonItem:doneButtonItem];
 	
-    UIBarButtonItem *cancelButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelAction:)] autorelease];
-	[self.navigationItem setRightBarButtonItem:cancelButtonItem];
+    //UIBarButtonItem *cancelButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelAction:)] autorelease ];
+	//[self.navigationItem setRightBarButtonItem:cancelButtonItem];
+    
+    UIBarButtonItem *menuButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Menu" style:UIBarButtonItemStylePlain target:self action:@selector(menuAction:)] autorelease ];
+	[self.navigationItem setRightBarButtonItem:menuButtonItem];
+    
     [self.navigationItem setTitle:@"Loading..."];
 
     if(self.preselected == NULL){
@@ -60,23 +64,36 @@
          ELCAsset *elcAsset = [[[ELCAsset alloc] initWithAsset:result] autorelease];
          [elcAsset setParent:self];
          ALAsset *asset = [elcAsset asset];
-         NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
-         NSLog(@"%@", url);
-//         NSURL *url = [[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]];
+         NSURL *url = [[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]];
+         NSLog(@"preparePhotos:%@", url);
          [elcAsset setSelected:([self.preselected objectForKey:url] != nil)];
          [self.elcAssets addObject:elcAsset];
      }];    
     NSLog(@"done enumerating photos");
 	
 	[self.tableView reloadData];
-    if(((ELCAlbumPickerController*)self.parent).type == 0){
-        [self.navigationItem setTitle:@"Pick Photos"];
-    }else{
-        [self.navigationItem setTitle:@"Pick Videos"];
-    }
+    [self.navigationItem setTitle:[self.assetGroup valueForProperty:ALAssetsGroupPropertyName]];
     
     [pool release];
 
+}
+
+- (void) menuAction:(id)sender {
+    UIActionSheet *as = [[UIActionSheet alloc] initWithTitle:@"" delegate:self cancelButtonTitle:@"キャンセル" destructiveButtonTitle:nil otherButtonTitles:@"すべて選択", @"すべて解除", nil];
+    [as setActionSheetStyle:UIActionSheetStyleDefault];
+    as.tag = 1;
+    [as showInView:self.view];
+    [as release];
+}
+
+- (void) actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    NSLog(@"as:%d", buttonIndex);
+    if(buttonIndex == 0 || buttonIndex == 1){
+        for(ELCAsset *a in self.elcAssets){
+            [a setSelected:(buttonIndex == 0)];
+        }
+        [self.tableView reloadData];
+    }
 }
 
 - (void) cancelAction:(id)sender {
@@ -92,9 +109,9 @@
     {		
 		if([elcAsset selected]) {
 			ALAsset *asset = [elcAsset asset];
-            NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
-            NSLog(@"%@", url);
-//            NSURL *url = [[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]];
+//            NSURL *url = [asset valueForProperty:ALAssetPropertyAssetURL];
+            NSURL *url = [[asset valueForProperty:ALAssetPropertyURLs] valueForKey:[[[asset valueForProperty:ALAssetPropertyURLs] allKeys] objectAtIndex:0]];
+            NSLog(@"doneAction:%@", url);
 			[selectedAssetsImages setObject:asset forKey:url];
 		}
 	}
