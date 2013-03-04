@@ -12,7 +12,7 @@
 
 @implementation ELCAlbumPickerController
 
-@synthesize parent, assetGroups, selectedAssets, selected, type, selectAll;
+@synthesize parent, assetGroups, selectedAssets, selected, type, selectAll, count;
 
 #pragma mark -
 #pragma mark View lifecycle
@@ -41,6 +41,7 @@
     }
     
     library = [[ALAssetsLibrary alloc] init];
+    count = 0;
 
     // Load Albums into assetGroups
     dispatch_async(dispatch_get_main_queue(), ^
@@ -56,6 +57,12 @@
             }
             
             [self.assetGroups addObject:group];
+            if(self.type == 0){
+                [group setAssetsFilter:[ALAssetsFilter allPhotos]];
+            }else{
+                [group setAssetsFilter:[ALAssetsFilter allVideos]];
+            }
+            count += [group numberOfAssets];
             
             NSMutableDictionary *tempDict = [self.selectedAssets objectForKey:[group valueForProperty:ALAssetsGroupPropertyURL]];
             if(tempDict == nil){
@@ -139,7 +146,7 @@
 //            [assets addObjectsFromArray:[ma objectForKey:key]];
 //        }
 //    }
-    [(ELCImagePickerController*)parent selectedAssets:[NSMutableDictionary dictionaryWithDictionary:self.selectedAssets]];
+    [(ELCImagePickerController*)parent selectedAssets:[NSMutableDictionary dictionaryWithDictionary:self.selectedAssets] totalCount:self.count];
 //    [assets release];
 	//[(ELCImagePickerController*)parent selectedAssets:_assets];
 }
@@ -182,7 +189,7 @@
 //    if(aCount == 0 && selectAll){
 //        aCount = gCount;
 //    }
-    
+        
     cell.textLabel.text = [NSString stringWithFormat:@"%@ (%d/%d)",[g valueForProperty:ALAssetsGroupPropertyName], aCount, gCount];
     cell.textLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
     [cell.imageView setImage:[UIImage imageWithCGImage:[(ALAssetsGroup*)[assetGroups objectAtIndex:indexPath.row] posterImage]]];

@@ -34,7 +34,9 @@
 #pragma mark ELCImagePickerControllerDelegate Methods
 
 - (void)elcImagePickerController:(ELCImagePickerController *)picker didFinishPickingMediaWithInfo:(NSArray *)info {
-	
+
+	NSLog(@"total:%i", [picker totalCount]);
+    
 	[self dismissModalViewControllerAnimated:YES];
 	
     for (UIView *v in [scrollview subviews]) {

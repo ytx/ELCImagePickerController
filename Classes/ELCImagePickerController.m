@@ -14,7 +14,7 @@
 
 @implementation ELCImagePickerController
 
-@synthesize delegate;
+@synthesize delegate, count;
 
 -(void)cancelImagePicker {
 	if([delegate respondsToSelector:@selector(elcImagePickerControllerDidCancel:)]) {
@@ -22,8 +22,10 @@
 	}
 }
 
--(void)selectedAssets:(NSMutableDictionary*)_assets {
+-(void)selectedAssets:(NSMutableDictionary*)_assets totalCount:(int)_count{
 
+    self.count = _count;
+    
 	NSMutableArray *returnArray = [[[NSMutableArray alloc] init] autorelease];
     NSMutableDictionary *returnDict = [[[NSMutableDictionary alloc] init] autorelease];
     NSEnumerator *e = [_assets keyEnumerator];
@@ -64,6 +66,10 @@
 	if([delegate respondsToSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:)]) {
 		[delegate performSelector:@selector(elcImagePickerController:didFinishPickingMediaWithInfo:) withObject:self withObject:[NSArray arrayWithArray:returnArray]];
 	}
+}
+
+-(int)totalCount {
+    return self.count;
 }
 
 #pragma mark -

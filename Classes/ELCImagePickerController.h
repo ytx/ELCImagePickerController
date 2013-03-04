@@ -11,12 +11,15 @@
 @interface ELCImagePickerController : UINavigationController {
 
 	id delegate;
+    int count;
 }
 
 @property (nonatomic, assign) id delegate;
+@property (nonatomic) int count;
 
--(void)selectedAssets:(NSMutableDictionary *)_assets;
+-(void)selectedAssets:(NSMutableDictionary *)_assets totalCount:(int)_count;
 -(void)cancelImagePicker;
+-(int)totalCount;
 
 @end
 
